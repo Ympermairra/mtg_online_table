@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: mtgo
+      POSTGRES_USER: mtgo
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+
+  django:
+    build: ./django-service
+    volumes:
+      - ./django-service:/app
+    environment:
+      DATABASE_URL: postgresql://mtgo:secret@postgres/mtgo
+      REDIS_URL: redis://redis:6379
+    depends_on: [postgres, redis]
+
+  go-service:
+    build: ./go-service
+    volumes:
+      - ./go-service:/app
+    environment:
+      REDIS_URL: redis://redis:6379
+      DJANGO_API_URL: http://django:8000
+    depends_on: [redis, django]
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on: [django, go-service, frontend]
+
+volumes:
+  pgdata:

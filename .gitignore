@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+django-service/.env
+
+# Go
+go-service/server
+go-service/.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Docker
+.env
+*.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
