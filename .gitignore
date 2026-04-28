@@ -4,6 +4,7 @@ __pycache__/
 *.pyo
 .venv/
 django-service/.env
+db.sqlite3
 
 # Go
 go-service/server
