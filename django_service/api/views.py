@@ -1,7 +1,10 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from django.contrib.auth import get_user_model
 
 from decks.models import Deck, DeckCard
@@ -24,7 +27,7 @@ def me(request):
 
 class DeckViewSet(viewsets.ModelViewSet):
     serializer_class = DeckSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         return Deck.objects.filter(
@@ -118,7 +121,7 @@ class DeckViewSet(viewsets.ModelViewSet):
 
 class CardViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CardSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
