@@ -1,13 +1,14 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 
 from decks.models import Deck, DeckCard
-from .serializers import DeckSerializer, DeckCardSerializer, CardSerializer
+from .serializers import DeckSerializer, DeckCardSerializer, CardSerializer, FormatSerializer
 from decks.validators import DeckValidator
 from cards.models import Card
+from formats.models import Format
 
 User = get_user_model()
 
@@ -114,6 +115,13 @@ class DeckViewSet(viewsets.ModelViewSet):
                 not_found.append(name)
 
         return Response({'imported': imported, 'not_found': not_found})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def formats_list(request):
+    formats = Format.objects.all()
+    return Response(FormatSerializer(formats, many=True).data)
 
 
 class CardViewSet(viewsets.ReadOnlyModelViewSet):

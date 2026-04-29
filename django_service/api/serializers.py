@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from decks.models import Deck, DeckCard
 from cards.models import Card
+from formats.models import Format
 
 
 class DeckCardSerializer(serializers.ModelSerializer):
@@ -45,6 +46,12 @@ class DeckSerializer(serializers.ModelSerializer):
 
     def get_card_count(self, obj):
         return sum(dc.quantity for dc in obj.deck_cards.filter(zone='main'))
+
+class FormatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Format
+        fields = ['id', 'name', 'description', 'deck_min_size', 'deck_max_size', 'sideboard_size']
+
 
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
