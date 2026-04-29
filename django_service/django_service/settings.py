@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-+u2z!g8xgjtbb5xyn1v8kl(^hyprm$0)gu_wle-gw-i6-ine7*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'django']
 
 
 # Application definition
@@ -79,14 +79,16 @@ WSGI_APPLICATION = 'django_service.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mtg',
-        'USER': 'user',
-        'PASSWORD': 'pass',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('POSTGRES_DB', 'mtgo'),
+        'USER': os.getenv('POSTGRES_USER', 'mtgo'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'secret'),
+        'HOST': os.getenv('DB_HOST', 'postgres'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
