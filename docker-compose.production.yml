@@ -2,47 +2,48 @@
 
 volumes:
   pgdata:
+  static:
 
 services:
-  postgres:
+  db:
     image: postgres:16
-#    environment:
-#      POSTGRES_DB: mtgo
-#      POSTGRES_USER: mtgo
-#      POSTGRES_PASSWORD: secret
+    env_file:
+      - .env
     volumes:
       - pgdata:/var/lib/postgresql/data
-    env_file:
-      - .env
 
   django:
-    image: rtem4i4ik/mtg_online_table_django
+    image: rtem4i4ik/mtg_django
     env_file:
       - .env
+    volumes:
+      - static:/backend_static
     depends_on:
       - postgres
 
   go-service:
-    image: gg/mtg_online_table_golang
+    image: rtem4i4ik/mtg_golang
     volumes:
       - ./go-service:/app
     env_file:
       - .env
-#    environment:
-#      REDIS_URL: redis://redis:6379
-#      DJANGO_API_URL: http://django:8000
-    depends_on: [ redis, django ]
+    depends_on: django
 
   frontend:
-    image: gg/mtg_online_table_frontend
+    image: rtem4i4ik/mtg_frontend
     volumes:
       - ./frontend:/app
       - /app/node_modules
 
-  nginx:
-    image: nginx:alpine
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  gateway:
+    image: rtem4i4ik/mtg_gateway
+    env_file:
+      - .env
     ports:
-      - "80:80"
-    depends_on: [ django, go-service, frontend ]
+      - "8080:80"
+    volumes:
+      - static:/static
+    depends_on:
+      - django
+      - go-service
+      - frontend

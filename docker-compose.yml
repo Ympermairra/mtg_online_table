@@ -1,45 +1,49 @@
 # docker-compose.yml
 
+volumes:
+  pgdata:
+  static:
+
 services:
-  postgres:
+  db:
     image: postgres:16
-    environment:
-      POSTGRES_DB: mtgo
-      POSTGRES_USER: mtgo
-      POSTGRES_PASSWORD: secret
+    env_file:
+      - .env
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7-alpine
-
   django:
     build: ./django_service/
+    env_file:
+      - .env
     volumes:
-      - ./django_service:/app
-    environment:
-      DATABASE_URL: postgresql://mtgo:secret@postgres/mtgo
-      REDIS_URL: redis://redis:6379
-    depends_on: [postgres, redis]
+      - static:/backend_static
+    depends_on:
+      - db
 
   go-service:
     build: ./go-service
-    environment:
-      REDIS_URL: redis://redis:6379
-      DJANGO_API_URL: http://django:8000
-    depends_on: [redis, django]
+    env_file:
+      - .env
+    depends_on:
+      - django
 
   frontend:
     build: ./frontend
+    env_file:
+      - .env
     volumes:
       - ./frontend:/app
       - /app/node_modules
 
-  nginx:
+  gateway:
     build: ./nginx
+    env_file:
+      - .env
     ports:
       - "8080:80"
-    depends_on: [django, go-service, frontend]
+    depends_on:
+      - django
+      - go-service
+      - frontend
 
-volumes:
-  pgdata:
