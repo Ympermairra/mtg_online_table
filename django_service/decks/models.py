@@ -1,20 +1,11 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth import get_user_model
 from cards.models import Card
+from formats.models import Format
 
 User = get_user_model()
 
 class Deck(models.Model):
-
-    class Formats(models.TextChoices):
-        STANDARD = 'standard', 'Standard'
-        PIONER = 'pioneer', 'Pioneer'
-        MODERN = 'modern', 'Modern'
-        LEGACY = 'legacy', 'Legacy'
-        VINTAGE = 'vintage', 'Vintage'
-        COMANDER = 'commander', 'Commander'
-        PAUPER = 'pauper', 'Pauper'
 
     owner = models.ForeignKey(
         User,
@@ -22,7 +13,11 @@ class Deck(models.Model):
         related_name='decks'
     )
     name = models.CharField(max_length=255)
-    format = models.CharField(max_length=20, choices=Formats.choices)
+    format = models.ForeignKey(
+        Format,
+        on_delete=models.CASCADE,
+        related_name='format_decks'
+    )
     description = models.TextField(blank=True)
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -58,6 +53,7 @@ class DeckCard(models.Model):
         choices=Zone.choices,
         default='main'
     )
+
 
     class Meta:
         unique_together = ('deck', 'card', 'zone')
