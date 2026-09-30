@@ -19,7 +19,7 @@ services:
     volumes:
       - static:/backend_static
     depends_on:
-      - postgres
+      - db
 
   go-service:
     image: rtem4i4ik/mtg_golang
@@ -27,7 +27,8 @@ services:
       - ./go-service:/app
     env_file:
       - .env
-    depends_on: django
+    depends_on:
+      - django
 
   frontend:
     image: rtem4i4ik/mtg_frontend
