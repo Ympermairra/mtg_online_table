@@ -38,9 +38,11 @@ class DeckViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Deck.objects.filter(
-            owner=self.request.user
-        ).prefetch_related('deck_cards__card')
+        queryset = Deck.objects.prefetch_related('deck_cards__card')
+        # Без токена request.user — AnonymousUser, фильтр по нему падает с 500
+        if not self.request.user.is_authenticated:
+            return queryset.none()
+        return queryset.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
