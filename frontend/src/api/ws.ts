@@ -5,10 +5,18 @@ type MessageHandler = (msg: WsMessage) => void
 class WsClient {
   private socket: WebSocket | null = null
   private handlers: MessageHandler[] = []
+  private queue: WsMessage[] = []
 
   connect() {
-    const url = `ws://${window.location.host}/game-ws/`
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    const url = `${protocol}://${window.location.host}/game-ws/`
     this.socket = new WebSocket(url)
+
+    // Отправляем то, что успели поставить в очередь до открытия соединения
+    this.socket.onopen = () => {
+      this.queue.forEach((msg) => this.socket?.send(JSON.stringify(msg)))
+      this.queue = []
+    }
 
     this.socket.onmessage = (e) => {
       try {
@@ -26,6 +34,7 @@ class WsClient {
   disconnect() {
     this.socket?.close()
     this.socket = null
+    this.queue = []
   }
 
   onMessage(handler: MessageHandler) {
@@ -38,6 +47,8 @@ class WsClient {
   private send(msg: WsMessage) {
     if (this.socket?.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(msg))
+    } else if (this.socket?.readyState === WebSocket.CONNECTING) {
+      this.queue.push(msg)
     }
   }
 
